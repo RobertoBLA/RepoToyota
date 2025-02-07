@@ -14,3 +14,5 @@ Route::get('/item', [ItemController::class, 'index'])->name('item.index');
 Route::post('/item', [ItemController::class, 'store'])->name('item.store');
 
 Route::get('/item/{id}', [ItemController::class, 'show'])->name('item.show');
+
+Route::put('/item/{id}', [ItemController::class, 'update'])->name('item.update');

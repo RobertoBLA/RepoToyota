@@ -8,7 +8,8 @@ use App\Models\Item;
 class ItemController extends Controller
 {
     // Display the form to create a new item
-    public function index() {
+    public function index()
+    {
         $items = Item::all();
         return view('item', compact('items'));
     }
@@ -21,8 +22,14 @@ class ItemController extends Controller
             'description' => 'required|string|max:255',
             'price' => 'required|numeric',
             'stock' => 'required|integer',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,svg|max:2048',
         ]);
+        // Handle file upload
+        if ($request->hasFile('image')) {
+            $validatedData['image'] = $request->file('image')->store('images', 'public');
+        } else {
+            $validatedData['image'] = null; // Ensure the image field is set to null if no file is uploaded
+        }
 
         Item::create($validatedData);
 
@@ -43,12 +50,12 @@ class ItemController extends Controller
 
         //Return item details
         return response()->json([
-            'id' => $item -> id,
-            'name' => $item -> name,
-            'description' => $item -> description,
-            'price' => $item -> price,
-            'stock' => $item -> stock,
-            //'image' => $item->image ? asset('storage/' . $item->image) : null,
+            'id' => $item->id,
+            'name' => $item->name,
+            'description' => $item->description,
+            'price' => $item->price,
+            'stock' => $item->stock,
+            'image' => $item->image ? asset('storage/' . $item->image) : null,
             //'status' => $item -> status,
         ]);
     }
@@ -56,31 +63,29 @@ class ItemController extends Controller
     // Update an existing item
     public function update(Request $request, $id)
     {
-        $request->validate([
+        
+        $validatedData = $request->validate([
+
             'name' => 'required|string',
             'description' => 'nullable|string',
             'price' => 'required|numeric',
             'stock' => 'required|integer',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'status' => 'required|in:active,inactive',
+            //'status' => 'required|in:active,inactive',
         ]);
-    
+
         $item = Item::findOrFail($id);
-    
-        // Update item fields
-        $item->name = $request->input('name');
-        $item->description = $request->input('description');
-        $item->price = $request->input('price');
-        $item->stock = $request->input('stock');
-    
+
         // Handle image upload if provided
         if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('images', 'public');
-            $item->image = $imagePath;
+            $validatedData['image'] = $request->file('image')->store('images', 'public');
+        } elseif ($request->input('image') === null) {
+            // If no new image is uploaded and the image field is explicitly cleared, set it to null
+            $validatedData['image'] = null;
         }
-    
-        $item->save();
-    
+
+        $item->update($validatedData);
+
         return redirect()->back()->with('success', 'Item updated successfully!');
     }
 

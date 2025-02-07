@@ -106,9 +106,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function closeModal() {
     document.getElementById('createFormContainer').style.display = 'none';
+    document.getElementById('editFormContainer').style.display = 'none';
     document.getElementById('overlay').style.display = 'none';
     resetForm();
 }
+
 
 // Function to Check if Form Has Data
 function isFormDirty() {
@@ -169,9 +171,9 @@ function isFormDirty() {
 // Handle Form Reset
 function resetForm() {
     const form = document.getElementById('itemForm');
-    form.reset();
     const previewImage = document.getElementById('previewImage');
     previewImage.src = 'https://static.thenounproject.com/png/1269202-200.png';
+
 
 }
 
@@ -222,20 +224,26 @@ if (createButton && createFormContainer) {
         console.log('Create button clicked');
         createFormContainer.style.display = 'block';
         overlay.style.display = 'block'; // Show the overlay
+
+        previewImage.src = 'https://static.thenounproject.com/png/1269202-200.png';
     });
 }
 
-    document.getElementById('image')?.addEventListener('change', function (event) {
-        const file = event.target.files[0]; // Get the selected file
-        const previewImage = document.getElementById('previewImage'); // Get the preview image element
+document.getElementById('image').addEventListener('change', function (event) {
+    const file = event.target.files[0];
+    const previewImage = document.getElementById('previewImage');
 
-        if (file) {
-            const reader = new FileReader(); // Create a FileReader instance
-            reader.onload = function (e) {
-                previewImage.src = e.target.result; // Set the image source to the file's data URL
-            };
-            reader.readAsDataURL(file); // Read the file as a data URL
-        } else {
-            previewImage.src = 'https://static.thenounproject.com/png/1269202-200.png'; // Reset to placeholder if no file is selected
-        }
-    });
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            previewImage.src = e.target.result; // Set the image source
+        console.log('Image selected:', file.name);
+        };
+        reader.readAsDataURL(file); // Read the file as a data URL
+    } else {
+        previewImage.src = 'https://via.placeholder.com/200'; // Reset to placeholder
+ 
+    }
+});
+
+
