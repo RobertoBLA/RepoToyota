@@ -6,13 +6,13 @@
     <h4 style="text-align: center;"> Edit Item</h4>
     <div class="modal-content">
         <!-- Split Layout -->
-        <form action="{{ route('item.update', $item->id) }}" method="POST" enctype="multipart/form-data" id="itemForm">
+        <form action="{{ route('item.update', ['id' => $item->id]) }}" method="POST" enctype="multipart/form-data" id="editForm">
             @csrf
             @method('PUT')
             <div class="split-container">
                 <!-- Left Side: Form Fields -->
                 <div class="form-section">
-                    <input type="hidden" name="eId" id="eId">
+                    <input type="hidden" name="id" id="eId">
                     <div class="mb-3">
                         <label for="cName" class="form-label">Name</label>
                         <input type="text" name="name" id="eName" class="form-control" required>

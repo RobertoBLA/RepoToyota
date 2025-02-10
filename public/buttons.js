@@ -1,72 +1,215 @@
 document.addEventListener('DOMContentLoaded', () => {
-    new DataTable('#items-table',);
+    // Initialize DataTable
+    const table = new DataTable('#items-table');
     console.log('DOM fully loaded. Running script...');
-    
-        // Use event delegation for dynamically added buttons
-        document.addEventListener('click', async function (event) {
-            const editButton = event.target.closest('.editButton'); // Check for Edit button
-            const deleteButton = event.target.closest('.deleteButton'); // Check for Delete button
-    
-            if (editButton) {
-                // Handle Edit Button Click
-                const itemId = editButton.dataset.itemId; // Get the item ID
-                console.log('Edit button clicked for item ID:', itemId);
-    
-                try {
-                    // Fetch item data from the server
-                    const response = await fetch(`item/${itemId}`);
-                    if (!response.ok) {
-                        throw new Error('Failed to fetch item data');
+
+    // Declare shared DOM elements
+    const createForm = document.getElementById('itemForm');
+    const submitButton = document.querySelector('#createFormContainer button[type="submit"]');
+    const saveButton = document.querySelector('#editFormContainer button[type="submit"]');
+    const createButton = document.getElementById('createButton');
+    const overlay = document.getElementById('overlay');
+    const createFormContainer = document.getElementById('createFormContainer');
+    const closeFormButton = document.getElementById('closeFormButton');
+    const previewImage = document.getElementById('previewImage');
+    const imageInput = document.getElementById('image');
+
+    // Handle Create Button Click
+    if (createButton && createFormContainer) {
+        createButton.addEventListener('click', () => {
+            console.log('Create button clicked');
+            createFormContainer.style.display = 'block';
+            overlay.style.display = 'block'; // Show the overlay
+            resetForm();
+        });
+    }
+
+    // Handle Close Button and Overlay Clicks
+    if (closeFormButton && overlay) {
+        [closeFormButton, overlay].forEach(element => {
+            element.addEventListener('click', () => {
+                if (isFormDirty()) {
+                    const confirmClose = confirm('You have unsaved changes. Are you sure you want to close?');
+                    if (!confirmClose) return; // Do not close the modal if the user cancels
+                }
+                closeModal();
+            });
+        });
+    }
+
+    // Handle Image Preview for Create Form
+    if (imageInput && previewImage) {
+        imageInput.addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    previewImage.src = e.target.result; // Set the image source
+                    console.log('Image selected:', file.name);
+                };
+                reader.readAsDataURL(file); // Read the file as a data URL
+            } else {
+                previewImage.src = 'https://static.thenounproject.com/png/1269202-200.png'; // Reset to placeholder
+            }
+        });
+    }
+
+    // Handle Form Submission
+    if (createForm && submitButton) {
+        createForm.addEventListener('submit', async function (event) {
+            event.preventDefault(); // Prevent the default form submission
+
+            // Disable the submit button to prevent multiple submissions
+            submitButton.disabled = true;
+            submitButton.textContent = 'Submitting...'; // Optional: Change button text
+
+            try {
+                // Gather form data
+                const formData = new FormData(createForm);
+
+                // Send the form data to the server
+                const response = await fetch(createForm.action, {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to create item');
+                }
+
+                // Handle success response
+                const result = await response.json();
+                console.log('Item created successfully:', result);
+
+                // Add the new item to the table
+                const newItem = result.item;
+
+                const newRow = table.row.add([
+                    newItem.id,
+                    newItem.name,
+                    newItem.description,
+                    newItem.price,
+                    newItem.stock,
+                    `<td>
+                    <button class="editButton btn btn-primary" data-item-id="${newItem.id}">Edit</button>
+                    <button class="deleteButton btn btn-danger" data-item-id="${newItem.id}">Delete</button>
+                </td>`,
+                ]).draw(false).node();
+
+                table.row(newRow).invalidate().draw(false);
+
+
+                // Make sure the newRow is inserted into the DOM before querying it
+                setTimeout(() => {
+                    const editButton = newRow.querySelector('.editButton');
+                    const deleteButton = newRow.querySelector('.deleteButton');
+
+                    if (editButton) {
+                        editButton.addEventListener('click', () => handleEdit(editButton));
+                    } else {
+                        console.error(`Edit button not found for item ID: ${newItem.id}`);
                     }
-    
-                    const item = await response.json();
-                    populateEditForm(item);
-    
-                    // Show the modal
+
+                    if (deleteButton) {
+                        deleteButton.addEventListener('click', () => handleDelete(deleteButton));
+                    } else {
+                        console.error(`Delete button not found for item ID: ${newItem.id}`);
+                    }
+                }, 100); // Delay execution slightly to ensure buttons are in the DOM
+
+                // Close the modal and reset the form
+                closeModal();
+
+                // Optionally, show a success message
+                alert(result.message || 'Item created successfully!');
+            } catch (error) {
+                console.error(error.message);
+                alert('An error occurred while creating the item.');
+            } finally {
+                // Re-enable the submit button
+                submitButton.disabled = false;
+                submitButton.textContent = 'Create Item'; // Reset button text
+            }
+        });
+    }
+
+
+
+    // Function to Handle Edit Button Click
+    document.addEventListener("click", function (event) {
+        if (event.target.closest(".editButton")) {
+            handleEdit(event); // Pass the full event
+        }
+        if (event.target.closest(".deleteButton")) {
+            handleDelete(event);
+        }
+    });
+
+
+
+    // Function to handle Edit Clicks
+    function handleEdit(event) {
+        const editButton = event.target.closest('.editButton'); // Ensure correct target
+        if (!editButton) {
+            console.error("Edit button not found in handleEdit");
+            return;
+        }
+
+        const itemId = editButton.getAttribute('data-item-id');
+        if (!itemId) {
+            console.error("Item ID not found for edit button");
+            return;
+        }
+
+        console.log("Editing item with ID:", itemId);
+        fetch(`item/${itemId}`)
+            .then(response => response.json())
+            .then(item => {
+                // Populate the edit form with item data
+                populateEditForm(item);
+
+                // Show the edit form container and overlay after a short delay
+                setTimeout(() => {
                     const editFormContainer = document.getElementById('editFormContainer');
                     const overlay = document.getElementById('overlay');
-    
                     if (editFormContainer && overlay) {
                         editFormContainer.style.display = 'block';
                         overlay.style.display = 'block';
                     }
-                } catch (error) {
-                    console.error(error.message);
-                    alert('An error occurred while fetching the item data.');
-                }
-            } else if (deleteButton) {
-                // Handle Delete Button Click
-                const itemId = deleteButton.dataset.itemId; // Get the item ID
-                console.log('Delete button clicked for item ID:', itemId);
-    
-                // Confirm deletion
-                const confirmDelete = confirm(`Are you sure you want to delete item ${itemId}?`);
-                if (confirmDelete) {
-                    try {
-                        // Send a DELETE request to the server
-                        const response = await fetch(`/api/items/${itemId}`, {
-                            method: 'DELETE',
-                        });
-    
-                        if (!response.ok) {
-                            throw new Error('Failed to delete item');
-                        }
-    
-                        // Remove the row from the table
-                        const row = deleteButton.closest('tr');
-                        if (row) {
-                            row.remove();
-                            console.log(`Item ${itemId} deleted successfully.`);
-                        }
-                    } catch (error) {
-                        console.error(error.message);
-                        alert('An error occurred while deleting the item.');
-                    }
-                }
+                }, 200); // Delay of 200ms to ensure form is populated
+            })
+            .catch(error => {
+                console.error('Error fetching item data for edit:', error);
+            });
+    }
+    // Function to handle Delete Clicks
+    async function handleDelete(event) {
+        const deleteButton = event.target.closest('.deleteButton');
+        const itemId = deleteButton.dataset.itemId;
+        console.log('Delete button clicked for item ID:', itemId);
+
+        const confirmDelete = confirm(`Are you sure you want to delete item ${itemId}?`);
+        if (!confirmDelete) return;
+
+        try {
+            const response = await fetch(`item/${itemId}`, {
+                method: 'DELETE',
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to delete item');
             }
-        });
-    });
-    
+
+            const table = $('#items-table').DataTable();
+            table.row(deleteButton.closest('tr')).remove().draw();
+
+            console.log(`Item ${itemId} deleted successfully.`);
+        } catch (error) {
+            console.error(error.message);
+            alert('An error occurred while deleting the item.');
+        }
+    }
+
     // Function to Populate the Edit Form
     function populateEditForm(item) {
         const editItemId = document.getElementById('eId');
@@ -74,24 +217,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const editDescription = document.getElementById('eDescription');
         const editPrice = document.getElementById('ePrice');
         const editStock = document.getElementById('eStock');
-    
-        console.log('eId:', editItemId);
-        console.log('eName:', editName);
-        console.log('eDescription:', editDescription);
-        console.log('ePrice:', editPrice);
-        console.log('eStock:', editStock);
-    
+
         if (!editItemId || !editName || !editDescription || !editPrice || !editStock) {
             console.error('One or more form fields are missing. Check the IDs in the HTML.');
             return;
         }
-    
+
+        // Populate the form fields
         editItemId.value = item.id;
         editName.value = item.name;
         editDescription.value = item.description;
         editPrice.value = item.price;
         editStock.value = item.stock;
-    
+
+        // Update the image preview
         const previewImage = document.getElementById('editPreviewImage');
         if (previewImage) {
             if (item.image) {
@@ -104,146 +243,143 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-function closeModal() {
-    document.getElementById('createFormContainer').style.display = 'none';
-    document.getElementById('editFormContainer').style.display = 'none';
-    document.getElementById('overlay').style.display = 'none';
-    resetForm();
-}
+    // Handle Edit Form Submission
+    const editForm = document.getElementById('editForm'); // Or the specific edit form
+
+    if (editForm) {
+        editForm.addEventListener('submit', async function (event) {
+            event.preventDefault(); // Prevent the default form submission
+
+            const itemIdE = document.getElementById('eId').value;  // Get the item ID (hidden input)
+            console.log('Updating item with ID:', itemIdE);
+
+            // Disable the submit button to prevent multiple submissions
+            saveButton.disabled = true;
+            saveButton.textContent = 'Saving...';
+
+            try {
+                // Gather the form data
+                const formData = new FormData(editForm);
+                const file = document.getElementById('image').files[0];
+                if (file && file.size > 0) {
+                    formData.append('image', file);
+                } else {
+                    formData.delete('image'); // Remove the image field if no file is selected
+                }
 
 
-// Function to Check if Form Has Data
-function isFormDirty() {
-    const form = document.querySelector('#createFormContainer form');
-    const inputs = form.querySelectorAll('input, textarea, select'); // Get all form fields
 
-    // Log the number of inputs being checked
-    console.log(`Checking ${inputs.length} form fields for changes...`);
+                formData.forEach((value, key) => {
+                    console.log(key, value); // Log all form fields and their values
+                });
+                // Send the form data to the server for updating the item
+      ;
+                const response = await fetch(`/item/${itemIdE}`, {
+                    method: 'PUT',
+                    body: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
 
-    // Check if any input has a value
-    for (const input of inputs) {
-        // Exclude the _token field
-        if (input.name === '_token') {
-            console.log(`Skipping _token field.`);
-            continue;
+                        
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to update item');
+                }
+
+                // Handle success response
+                const result = await response.json();
+                console.log('Item updated successfully:', result);
+
+                // Optionally, update the item in the table
+
+                // Close the modal after successful submission
+                closeModal();
+
+                alert(result.message || 'Item updated successfully!');
+            } catch (error) {
+                console.error(error.message);
+                alert('An error occurred while updating the item.');
+            } finally {
+                saveButton.disabled = false;
+                saveButton.textContent = 'Save Changes'; // Reset button text
+            }
+        });
+    }
+
+    // Function to Close Modal
+    function closeModal() {
+        const containers = [
+            document.getElementById('createFormContainer'),
+            document.getElementById('editFormContainer')
+        ];
+        const overlay = document.getElementById('overlay');
+
+        // Hide the containers and overlay
+        containers.forEach(container => {
+            if (container) {
+                container.style.display = 'none';
+            }
+        });
+
+        if (overlay) {
+            overlay.style.display = 'none';
         }
 
-        if (input.type === 'file') {
-            // For file inputs, check if a file is selected
-            if (input.files.length > 0) {
+        // Reset the form fields
+        resetForm();
+    }
+
+    // Function to Check if Form Has Data
+    function isFormDirty() {
+        const form = document.querySelector('#createFormContainer form, #editFormContainer form');
+        if (!form) return false;
+
+        const inputs = form.querySelectorAll('input, textarea, select'); // Get all form fields
+        console.log(`Checking ${inputs.length} form fields for changes...`);
+
+        for (const input of inputs) {
+            if (input.name === '_token') continue; // Skip CSRF token field
+
+            if (input.type === 'file' && input.files.length > 0) {
                 console.log(`File input detected: ${input.files[0].name}`);
                 return true;
+            } else if (input.value.trim() !== '') {
+                console.log(`Non-empty input detected: ${input.name} = ${input.value}`);
+                return true;
             }
-        } else if (input.value.trim() !== '') {
-            // For other inputs, check if the value is not empty
-            console.log(`Non-empty input detected: ${input.name} = ${input.value}`);
-            return true;
         }
+
+        // Check if the image preview has changed
+        const previewImage = document.getElementById('previewImage') || document.getElementById('editPreviewImage');
+        const defaultPlaceholder = 'https://static.thenounproject.com/png/1269202-200.png';
+
+        if (previewImage) {
+            const previewUrl = new URL(previewImage.src);
+            const defaultUrl = new URL(defaultPlaceholder);
+
+            if (previewUrl.hostname !== defaultUrl.hostname || previewUrl.pathname !== defaultUrl.pathname) {
+                console.log('Image preview has changed.');
+                return true;
+            }
+        }
+
+        console.log('No changes detected in the form or image preview.');
+        return false;
     }
 
-    // Check if the image preview is not the default placeholder
-    const previewImage = document.getElementById('previewImage');
-    const defaultPlaceholder = 'https://static.thenounproject.com/png/1269202-200.png'; // Default placeholder URL
 
-    console.log(`Preview Image src: ${previewImage.src}`);
-    console.log(`Default Placeholder URL: ${defaultPlaceholder}`);
+    // Function to Reset Form
+    function resetForm() {
+        const forms = document.querySelectorAll('#createFormContainer form, #editFormContainer form');
+        forms.forEach(form => form.reset());
 
-    // Normalize both URLs for comparison
-    const previewUrl = new URL(previewImage.src);
-    const defaultUrl = new URL(defaultPlaceholder);
-
-    console.log(`Normalized Preview URL: ${previewUrl.hostname}${previewUrl.pathname}`);
-    console.log(`Normalized Default URL: ${defaultUrl.hostname}${defaultUrl.pathname}`);
-
-    if (
-        previewUrl.hostname !== defaultUrl.hostname ||
-        previewUrl.pathname !== defaultUrl.pathname
-    ) {
-        console.log('Image preview has changed.');
-        return true; // Image preview has changed
-    }
-
-    console.log('No changes detected in the form or image preview.');
-    return false; // No changes detected
-}
-
-
-// Handle Form Reset
-function resetForm() {
-    const form = document.getElementById('itemForm');
-    const previewImage = document.getElementById('previewImage');
-    previewImage.src = 'https://static.thenounproject.com/png/1269202-200.png';
-
-
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-const createButton = document.getElementById('createButton');
-const overlay = document.getElementById('overlay');
-const createFormContainer = document.getElementById('createFormContainer');
-const closeFormButton = document.getElementById('closeFormButton');
-
-
-// Close the form container when the "Close" button/overlay is clicked
-if (closeFormButton && overlay) {
-    // Hide the form container when the "Close" button is clicked
-    document.getElementById('closeFormButton').addEventListener('click', () => {
-        // Check if the form or image preview has data
-        if (isFormDirty()) {
-            // Show confirmation dialog
-            const confirmClose = confirm('You have unsaved changes. Are you sure you want to close?');
-            if (!confirmClose) {
-                return; // Do not close the modal if the user cancels
+        const previewImages = document.querySelectorAll('#previewImage, #editPreviewImage');
+        previewImages.forEach(image => {
+            if (image) {
+                image.src = 'https://static.thenounproject.com/png/1269202-200.png';
             }
-        }
-        // Close the modal adn reset the form
-        closeModal();
-    });
-
-    // Hide the form container when clicking outside the form (on the overlay)
-    document.getElementById('overlay').addEventListener('click', () => {
-        // Check if the form or image preview has data
-        if (isFormDirty()) {
-            // Show confirmation dialog
-            const confirmClose = confirm('You have unsaved changes. Are you sure you want to close?');
-            if (!confirmClose) {
-                return; // Do not close the modal if the user cancels
-            }
-        }
-
-        // Close the modal and resete the form
-        closeModal();
-    });
-}
-
-// Show the form container when the "Create Item" button is clicked
-if (createButton && createFormContainer) {
-    createButton.addEventListener('click', () => {
-        console.log('Create button clicked');
-        createFormContainer.style.display = 'block';
-        overlay.style.display = 'block'; // Show the overlay
-
-        previewImage.src = 'https://static.thenounproject.com/png/1269202-200.png';
-    });
-}
-
-document.getElementById('image').addEventListener('change', function (event) {
-    const file = event.target.files[0];
-    const previewImage = document.getElementById('previewImage');
-
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            previewImage.src = e.target.result; // Set the image source
-        console.log('Image selected:', file.name);
-        };
-        reader.readAsDataURL(file); // Read the file as a data URL
-    } else {
-        previewImage.src = 'https://via.placeholder.com/200'; // Reset to placeholder
- 
+        });
     }
 });
-
-

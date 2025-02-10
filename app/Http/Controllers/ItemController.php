@@ -7,93 +7,123 @@ use App\Models\Item;
 
 class ItemController extends Controller
 {
-    // Display the form to create a new item
+    // Placeholder image URL (can be moved to config if needed)
+    const PLACEHOLDER_IMAGE = 'https://static.thenounproject.com/png/1269202-200.png';
+
+    /**
+     * Display a listing of all items.
+     */
     public function index()
     {
         $items = Item::all();
         return view('item', compact('items'));
     }
 
-    // Store a new item
+    /**
+     * Store a newly created item in storage.
+     */
     public function store(Request $request)
     {
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'required|string|max:255',
+            'description' => 'nullable|string|max:255',
             'price' => 'required|numeric',
             'stock' => 'required|integer',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,svg|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
-        // Handle file upload
+    
         if ($request->hasFile('image')) {
             $validatedData['image'] = $request->file('image')->store('images', 'public');
         } else {
-            $validatedData['image'] = null; // Ensure the image field is set to null if no file is uploaded
+            $validatedData['image'] = null;
         }
-
-        Item::create($validatedData);
-
-        return redirect()->back()->with('success', 'Item created successfully!');
+    
+        $item = Item::create($validatedData);
+    
+        return response()->json([
+            'message' => 'Item created successfully',
+            'item' => [
+                'id' => $item->id,
+                'name' => $item->name,
+                'description' => $item->description,
+                'price' => $item->price,
+                'stock' => $item->stock,
+                'image' => $item->image ? asset('storage/' . $item->image) : null,
+            ],
+        ]);
     }
 
-    // Display the form to edit an existing item
+    /**
+     * Show the form for editing the specified item.
+     */
     public function edit($id)
     {
         $item = Item::findOrFail($id);
         return view('form.edit', compact('item'));
     }
 
-    // Display a specific item
+    /**
+     * Display the specified item (used for AJAX requests).
+     */
     public function show($id)
     {
         $item = Item::findOrFail($id);
 
-        //Return item details
+        // Return item details as JSON
         return response()->json([
             'id' => $item->id,
             'name' => $item->name,
             'description' => $item->description,
             'price' => $item->price,
             'stock' => $item->stock,
-            'image' => $item->image ? asset('storage/' . $item->image) : null,
-            //'status' => $item -> status,
+            'image' => $item->image ? asset('storage/' . $item->image) : self::PLACEHOLDER_IMAGE,
         ]);
     }
 
-    // Update an existing item
+
+    /**
+     * Update the specified item in storage.
+     */
     public function update(Request $request, $id)
-    {
-        
-        $validatedData = $request->validate([
+{
+    $validatedData = $request->validate([
+        'name' => 'required|string',
+        'description' => 'nullable|string',
+        'price' => 'required|numeric',
+        'stock' => 'required|integer',
+        'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+    ]);
 
-            'name' => 'required|string',
-            'description' => 'nullable|string',
-            'price' => 'required|numeric',
-            'stock' => 'required|integer',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            //'status' => 'required|in:active,inactive',
-        ]);
+    $item = Item::findOrFail($id);
 
-        $item = Item::findOrFail($id);
-
-        // Handle image upload if provided
-        if ($request->hasFile('image')) {
-            $validatedData['image'] = $request->file('image')->store('images', 'public');
-        } elseif ($request->input('image') === null) {
-            // If no new image is uploaded and the image field is explicitly cleared, set it to null
-            $validatedData['image'] = null;
-        }
-
-        $item->update($validatedData);
-
-        return redirect()->back()->with('success', 'Item updated successfully!');
+    // Handle image upload if provided
+    if ($request->hasFile('image') && $request->file('image')->isValid()) {
+        $validatedData['image'] = $request->file('image')->store('images', 'public');
+    } else {
+        // Don't change the image if no file is uploaded
+        $validatedData['image'] = $item->image;
     }
 
-    // Delete an existing item
+    // Update the item
+    $item->update($validatedData);
+
+    // Return a success response
+    return response()->json([
+        'message' => 'Item updated successfully!',
+        'item' => $item
+    ]);
+}
+
+
+    /**
+     * Remove the specified item from storage.
+     */
     public function destroy($id)
     {
         $item = Item::findOrFail($id);
-        return view('delete', compact('item'));
+
+        // Optionally, use soft deletes if enabled in the model
+        $item->delete();
 
         return redirect()->back()->with('success', 'Item deleted successfully!');
     }
