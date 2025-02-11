@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize DataTable
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     const table = new DataTable('#items-table');
     console.log('DOM fully loaded. Running script...');
 
@@ -14,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const previewImage = document.getElementById('previewImage');
     const imageInput = document.getElementById('image');
 
+    
     // Handle Create Button Click
     if (createButton && createFormContainer) {
         createButton.addEventListener('click', () => {
@@ -244,69 +246,64 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Handle Edit Form Submission
-    const editForm = document.getElementById('editForm'); // Or the specific edit form
+const editForm = document.getElementById('editForm'); // Or the specific edit form
+if (editForm) {
+    editForm.addEventListener('submit', async function (event) {
+        event.preventDefault(); // Prevent the default form submission
 
-    if (editForm) {
-        editForm.addEventListener('submit', async function (event) {
-            event.preventDefault(); // Prevent the default form submission
+        const itemIdE = document.getElementById('eId').value;  // Get the item ID (hidden input)
+        console.log('Updating item with ID:', itemIdE);
 
-            const itemIdE = document.getElementById('eId').value;  // Get the item ID (hidden input)
-            console.log('Updating item with ID:', itemIdE);
+        // Disable the submit button to prevent multiple submissions
+        saveButton.disabled = true;
+        saveButton.textContent = 'Saving...';
 
-            // Disable the submit button to prevent multiple submissions
-            saveButton.disabled = true;
-            saveButton.textContent = 'Saving...';
+        try {
+            // Gather the form data
+            const formData = new FormData(editForm);
+            formData.append('_method', 'PUT'); // Simulate PUT request
 
-            try {
-                // Gather the form data
-                const formData = new FormData(editForm);
-                const file = document.getElementById('image').files[0];
-                if (file && file.size > 0) {
-                    formData.append('image', file);
-                } else {
-                    formData.delete('image'); // Remove the image field if no file is selected
-                }
-
-
-
-                formData.forEach((value, key) => {
-                    console.log(key, value); // Log all form fields and their values
-                });
-                // Send the form data to the server for updating the item
-      ;
-                const response = await fetch(`/item/${itemIdE}`, {
-                    method: 'PUT',
-                    body: formData,
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-
-                        
-                    }
-                });
-
-                if (!response.ok) {
-                    throw new Error('Failed to update item');
-                }
-
-                // Handle success response
-                const result = await response.json();
-                console.log('Item updated successfully:', result);
-
-                // Optionally, update the item in the table
-
-                // Close the modal after successful submission
-                closeModal();
-
-                alert(result.message || 'Item updated successfully!');
-            } catch (error) {
-                console.error(error.message);
-                alert('An error occurred while updating the item.');
-            } finally {
-                saveButton.disabled = false;
-                saveButton.textContent = 'Save Changes'; // Reset button text
+            const file = document.getElementById('image').files[0];
+            if (file && file.size > 0) {
+                formData.append('image', file);
+            } else {
+                formData.delete('image'); // Remove the image field if no file is selected
             }
-        });
-    }
+
+            formData.forEach((value, key) => {
+                console.log(key, value); // Log all form fields and their values
+            });
+
+            // Send the form data to the server for updating the item
+            const response = await fetch(`/item/${itemIdE}`, {
+                method: 'POST', // Use POST with _method=PUT
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken
+                }
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to update item');
+            }
+
+            // Handle success response
+            const result = await response.json();
+            console.log('Item updated successfully:', result);
+            // Close the modal after successful submission
+            closeModal();
+            alert(result.message || 'Item updated successfully!');
+        } catch (error) {
+            console.error(error.message);
+            alert('An error occurred while updating the item.');
+        } finally {
+            saveButton.disabled = false;
+            saveButton.textContent = 'Save Changes'; // Reset button text
+        }
+    });
+    
+}
 
     // Function to Close Modal
     function closeModal() {

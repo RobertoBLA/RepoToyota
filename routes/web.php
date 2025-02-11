@@ -22,7 +22,7 @@ Route::get('/item/{id}/edit', [ItemController::class, 'edit'])->name('item.edit'
 Route::get('/item/{id}', [ItemController::class, 'show'])->name('item.show');
 
 // Update Item
-Route::put('/item/{id}', [ItemController::class, 'update'])->name('item.update')->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
+Route::put('/item/{id}', [ItemController::class, 'update'])->name('item.update');
 
 // Delete Item
 Route::delete('/item/{id}', [ItemController::class, 'destroy'])->name('item.destroy');

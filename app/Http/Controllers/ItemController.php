@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Item;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 class ItemController extends Controller
 {
@@ -85,35 +87,57 @@ class ItemController extends Controller
      * Update the specified item in storage.
      */
     public function update(Request $request, $id)
-{
-    $validatedData = $request->validate([
-        'name' => 'required|string',
-        'description' => 'nullable|string',
-        'price' => 'required|numeric',
-        'stock' => 'required|integer',
-        'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-    ]);
-
-    $item = Item::findOrFail($id);
-
-    // Handle image upload if provided
-    if ($request->hasFile('image') && $request->file('image')->isValid()) {
-        $validatedData['image'] = $request->file('image')->store('images', 'public');
-    } else {
-        // Don't change the image if no file is uploaded
-        $validatedData['image'] = $item->image;
+    {
+        try {
+            // Validate the request
+            $validatedData = $request->validate([
+                'name' => 'required|string|max:255',
+                'description' => 'nullable|string|max:255',
+                'price' => 'required|numeric',
+                'stock' => 'required|integer',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            ]);
+    
+            // Find the item
+            $item = Item::findOrFail($id);
+    
+            // Handle image upload if provided
+            if ($request->hasFile('image') && $request->file('image')->isValid()) {
+                $validatedData['image'] = $request->file('image')->store('images', 'public');
+            } else {
+                // Don't change the image if no file is uploaded
+                $validatedData['image'] = $item->image;
+            }
+    
+            // Update the item
+            $item->update($validatedData);
+    
+            // Return a success response
+            return response()->json([
+                'message' => 'Item updated successfully!',
+                'item' => [
+                    'id' => $item->id,
+                    'name' => $item->name,
+                    'description' => $item->description,
+                    'price' => $item->price,
+                    'stock' => $item->stock,
+                    'image' => $item->image ? asset('storage/' . $item->image) : null,
+                ],
+            ]);
+        } catch (ValidationException $e) {
+            // Return validation errors as JSON
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            // Handle other exceptions
+            return response()->json([
+                'message' => 'An error occurred',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
-
-    // Update the item
-    $item->update($validatedData);
-
-    // Return a success response
-    return response()->json([
-        'message' => 'Item updated successfully!',
-        'item' => $item
-    ]);
-}
-
 
     /**
      * Remove the specified item from storage.

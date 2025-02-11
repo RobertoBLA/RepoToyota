@@ -1,3 +1,4 @@
+
 <!-- Overlay -->
 <div class="modal-overlay" id="overlay" style="display: none;"></div>
 
@@ -6,7 +7,7 @@
     <h4 style="text-align: center;"> Edit Item</h4>
     <div class="modal-content">
         <!-- Split Layout -->
-        <form action="{{ route('item.update', ['id' => $item->id]) }}" method="POST" enctype="multipart/form-data" id="editForm">
+        <form action="{{ route('item.update')" method="POST" enctype="multipart/form-data" id="editForm">
             @csrf
             @method('PUT')
             <div class="split-container">
