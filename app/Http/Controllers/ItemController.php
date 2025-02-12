@@ -99,21 +99,22 @@ class ItemController extends Controller
                 'stock' => 'required|integer',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             ]);
-
+    
             // Find the item
             $item = Item::findOrFail($id);
-
+    
             // Handle image upload if provided
             if ($request->hasFile('image') && $request->file('image')->isValid()) {
+                // Store the new image
                 $validatedData['image'] = $request->file('image')->store('images', 'public');
             } else {
-                // Don't change the image if no file is uploaded
-                $validatedData['image'] = $item->image;
+                // Do not include 'image' field if no new image is uploaded
+                unset($validatedData['image']);
             }
-
-            // Update the item
+    
+            // Update the item (image will only be updated if a new image is uploaded)
             $item->update($validatedData);
-
+    
             // Return a success response
             return response()->json([
                 'message' => 'Item updated successfully!',
@@ -140,6 +141,7 @@ class ItemController extends Controller
             ], 500);
         }
     }
+    
 
     /**
      * Remove the specified item from storage.

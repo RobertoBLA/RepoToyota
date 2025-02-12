@@ -268,7 +268,7 @@ if (editImageInput && editPreviewImage) {
         editStock.dataset.originalValue = item.stock;
 
         // Update the image preview
-        const previewImage = document.getElementById('editPreviewImage');
+        const previewImage = document.getElementById('ePreviewImage');
         if (previewImage) {
             if (item.image) {
                 previewImage.src = item.image;
@@ -298,11 +298,11 @@ if (editImageInput && editPreviewImage) {
                 const formData = new FormData(editForm);
                 formData.append('_method', 'PUT'); // Simulate PUT request
 
-                const file = document.getElementById('image').files[0];
+                const file = document.getElementById('eImage').files[0];
                 if (file && file.size > 0) {
-                    formData.append('image', file);
+                    formData.append('eImage', file);
                 } else {
-                    formData.delete('image'); // Remove the image field if no file is selected
+                    formData.delete('eImage'); // Remove the image field if no file is selected
                 }
 
                 formData.forEach((value, key) => {
