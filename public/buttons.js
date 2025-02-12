@@ -294,6 +294,36 @@ if (editForm) {
             // Handle success response
             const result = await response.json();
             console.log('Item updated successfully:', result);
+            
+            // Update the item in the table
+            const updatedItem = result.item;
+            const table = $('#items-table').DataTable();
+            
+            // Find the row that matches the item's ID
+            const rowIndexes = table.rows().eq(0).filter(function (rowIdx) {
+                return table.cell(rowIdx, 0).data() == updatedItem.id; // Use `==` to avoid type mismatch issues
+            }).toArray(); // Convert to array
+            
+            
+            // If a matching row is found, update it
+            if (rowIndexes.length > 0) {
+                const rowIndex = rowIndexes[0]; // Get the first matched row index
+                const row = table.row(rowIndex);;
+                row.data([
+                    updatedItem.id,
+                    updatedItem.name,
+                    updatedItem.description,
+                    updatedItem.price,
+                    updatedItem.stock,
+                    `<td>
+                        <button class="editButton btn btn-primary" data-item-id="${updatedItem.id}">Edit</button>
+                        <button class="deleteButton btn btn-danger" data-item-id="${updatedItem.id}">Delete</button>
+                    </td>`
+                ]).draw(false);
+            }
+            
+            
+            
             // Close the modal after successful submission
             closeModal();
             alert(result.message || 'Item updated successfully!');
