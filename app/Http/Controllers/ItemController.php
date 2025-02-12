@@ -7,6 +7,8 @@ use App\Models\Item;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
+use function Laravel\Prompts\error;
+
 class ItemController extends Controller
 {
     // Placeholder image URL (can be moved to config if needed)
@@ -33,15 +35,15 @@ class ItemController extends Controller
             'stock' => 'required|integer',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
-    
+
         if ($request->hasFile('image')) {
             $validatedData['image'] = $request->file('image')->store('images', 'public');
         } else {
             $validatedData['image'] = null;
         }
-    
+
         $item = Item::create($validatedData);
-    
+
         return response()->json([
             'message' => 'Item created successfully',
             'item' => [
@@ -97,10 +99,10 @@ class ItemController extends Controller
                 'stock' => 'required|integer',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             ]);
-    
+
             // Find the item
             $item = Item::findOrFail($id);
-    
+
             // Handle image upload if provided
             if ($request->hasFile('image') && $request->file('image')->isValid()) {
                 $validatedData['image'] = $request->file('image')->store('images', 'public');
@@ -108,10 +110,10 @@ class ItemController extends Controller
                 // Don't change the image if no file is uploaded
                 $validatedData['image'] = $item->image;
             }
-    
+
             // Update the item
             $item->update($validatedData);
-    
+
             // Return a success response
             return response()->json([
                 'message' => 'Item updated successfully!',
@@ -144,11 +146,27 @@ class ItemController extends Controller
      */
     public function destroy($id)
     {
-        $item = Item::findOrFail($id);
+        try {
+            $item = Item::findOrFail($id);
+            // Optionally, use soft deletes if enabled in the model
+            $item->delete();
 
-        // Optionally, use soft deletes if enabled in the model
-        $item->delete();
-
-        return redirect()->back()->with('success', 'Item deleted successfully!');
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Item updated successfully!',
+            ]);
+        } catch (ValidationException $e) {
+            // Return validation errors as JSON
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            // Handle other exceptions
+            return response()->json([
+                'message' => 'An error occurred',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 }

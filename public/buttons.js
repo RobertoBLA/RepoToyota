@@ -196,10 +196,13 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch(`item/${itemId}`, {
                 method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken
+                }
             });
 
             if (!response.ok) {
-                throw new Error('Failed to delete item');
+                throw new Error('Failed to delete item', itemId);
             }
 
             const table = $('#items-table').DataTable();
