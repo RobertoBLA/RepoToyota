@@ -430,14 +430,23 @@ if (editImageInput && editPreviewImage) {
         for (const input of inputs) {
             if (input.name === '_token' || input.name === '_method') continue;
     
-            // Compare only if the original value exists
-            if (input.dataset.originalValue !== undefined) {
-                if (input.value !== input.dataset.originalValue) {
-                    console.log(`Change detected in ${input.name}: ${input.value} (original: ${input.dataset.originalValue})`);
+            if (input.type === 'file') {
+                // 🔥 Special handling for file inputs
+                if (input.files.length > 0) {
+                    console.log(`Change detected in ${input.name}: New file selected.`);
                     return true;
+                }
+            } else {
+                // 🔥 Check other fields normally
+                if (input.dataset.originalValue !== undefined) {
+                    if (input.value !== input.dataset.originalValue) {
+                        console.log(`Change detected in ${input.name}: ${input.value} (original: ${input.dataset.originalValue})`);
+                        return true;
+                    }
                 }
             }
         }
+    
         return false;
     }
     
@@ -446,20 +455,31 @@ if (editImageInput && editPreviewImage) {
     function resetForm() {
         const forms = document.querySelectorAll('#createFormContainer form, #editFormContainer form');
         forms.forEach(form => form.reset());
-
+    
         // Remove the original value attributes to prevent comparison issues
         forms.forEach(form => {
             form.querySelectorAll('input, textarea, select').forEach(input => {
                 input.removeAttribute('data-original-value'); // Remove original value attribute on reset
             });
         });
-
-        const previewImages = document.querySelectorAll('#previewImage, #editPreviewImage');
+    
+        // Properly select the images inside preview containers
+        const previewImages = document.querySelectorAll('#imagePreview img, #ePreviewImage');
         previewImages.forEach(image => {
             if (image) {
                 image.src = 'https://static.thenounproject.com/png/1269202-200.png'; // Reset image preview
             }
         });
+    
+        // Reset file input so it doesn’t hold previous file selection
+        document.getElementById('eImage').value = '';
     }
+    
+    // Ensure reset runs when closing the form
+    document.getElementById('closeFormButton').addEventListener('click', function () {
+        document.getElementById('editFormContainer').style.display = 'none';
+        resetForm(); // Call reset AFTER hiding the form
+    });
+    
 
 });
