@@ -212,6 +212,8 @@
                         <button id="deleteItem" type="button" class="btn btn-danger deleteButton" data-item-id="{{ $item->id }}">
                             Delete
                         </button>
+                        <button id="viewItem" type="button" class="btn btn-info viewButton" data-item-id="{{ $item->id }}">
+                            View
                     </td>
                 </tr>
                 @endforeach
@@ -221,6 +223,7 @@
         <!-- Include the modal -->
         @include('forms.create')
         @include('forms.update')
+        @include('forms.view')
     </div>
 
     <script src="{{ asset('buttons.js') }}"></script>

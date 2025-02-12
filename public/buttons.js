@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     console.log('editImageInput:', editImageInput);
     console.log('editPreviewImage:', editPreviewImage);
-    
+
     // Handle Image Preview for Create Form
     if (imageInput && previewImage) {
         imageInput.addEventListener('change', function (event) {
@@ -65,21 +65,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-if (editImageInput && editPreviewImage) {
-    editImageInput.addEventListener('change', function (event) {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                editPreviewImage.src = e.target.result;
-                console.log('Edit image selected:', file.name);
-            };
-            reader.readAsDataURL(file);
-        } else {
-            editPreviewImage.src = 'https://static.thenounproject.com/png/1269202-200.png';
-        }
-    });
-}
+    if (editImageInput && editPreviewImage) {
+        editImageInput.addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    editPreviewImage.src = e.target.result;
+                    console.log('Edit image selected:', file.name);
+                };
+                reader.readAsDataURL(file);
+            } else {
+                editPreviewImage.src = 'https://static.thenounproject.com/png/1269202-200.png';
+            }
+        });
+    }
 
 
     // Handle Form Submission
@@ -163,13 +163,16 @@ if (editImageInput && editPreviewImage) {
 
 
 
-    // Function to Handle Edit Button Click
+    // Function to Handle Button Click
     document.addEventListener("click", function (event) {
         if (event.target.closest(".editButton")) {
             handleEdit(event); // Pass the full event
         }
         if (event.target.closest(".deleteButton")) {
             handleDelete(event);
+        }
+        if (event.target.closest(".viewButton")) {
+            handleView(event);
         }
     });
 
@@ -210,6 +213,42 @@ if (editImageInput && editPreviewImage) {
                 console.error('Error fetching item data for edit:', error);
             });
     }
+
+    // Function to handle View Clicks
+
+    async function handleView(event) {
+        const viewButton = event.target.closest('.viewButton');
+        if (!viewButton) {
+            console.error('View button not found');
+            return;
+        }
+        const itemId = viewButton.getAttribute('data-item-id');
+        if (!itemId) {
+            console.error('Item ID not found for view button');
+            return;
+        }
+
+        console.log('View button clicked for item ID:', itemId);
+        fetch(`item/${itemId}`)
+            .then(response => response.json())
+            .then(item => {
+                populateViewForm(item);
+                console.log('Item data:', item);
+
+                setTimeout(() => {
+                    const viewFormContainer = document.getElementById('viewFormContainer');
+                    const overlay = document.getElementById('overlay');
+                    if (viewFormContainer && overlay) {
+                        viewFormContainer.style.display = 'block';
+                        overlay.style.display = 'block';
+                    }
+                }, 200);
+            })
+            .catch(error => {
+                console.error('Error fetching item data for edit:', error);
+            });
+    }
+
     // Function to handle Delete Clicks
     async function handleDelete(event) {
         const deleteButton = event.target.closest('.deleteButton');
@@ -269,6 +308,39 @@ if (editImageInput && editPreviewImage) {
 
         // Update the image preview
         const previewImage = document.getElementById('ePreviewImage');
+        if (previewImage) {
+            if (item.image) {
+                previewImage.src = item.image;
+            } else {
+                previewImage.src = 'https://static.thenounproject.com/png/1269202-200.png';
+            }
+        } else {
+            console.error('editPreviewImage element not found.');
+        }
+    }
+
+    function populateViewForm(item) {
+        const viewItemId = document.getElementById('vId');
+        const viewName = document.getElementById('vName');
+        const viewDescription = document.getElementById('vDescription');
+        const viewPrice = document.getElementById('vPrice');
+        const viewStock = document.getElementById('vStock');
+
+        if (!viewItemId || !viewName || !viewDescription || !viewPrice || !viewStock) {
+            console.error('One or more form fields are missing. Check the IDs in the HTML.');
+            return;
+        }
+
+        // Populate the form fields
+        viewItemId.value = item.id;
+        viewName.value = item.name;
+        viewDescription.value = item.description;
+        viewPrice.value = item.price;
+        viewStock.value = item.stock;
+
+
+        // Update the image preview
+        const previewImage = document.getElementById('vPreviewImage');
         if (previewImage) {
             if (item.image) {
                 previewImage.src = item.image;
@@ -374,7 +446,8 @@ if (editImageInput && editPreviewImage) {
     function closeModal() {
         const containers = [
             document.getElementById('createFormContainer'),
-            document.getElementById('editFormContainer')
+            document.getElementById('editFormContainer'),
+            document.getElementById('viewFormContainer')
         ];
         const overlay = document.getElementById('overlay');
 
@@ -400,13 +473,13 @@ if (editImageInput && editPreviewImage) {
             console.log('Create form is not visible, skipping dirtiness check.');
             return false;
         }
-    
+
         const inputs = createForm.querySelectorAll('input, textarea, select');
         console.log(`Checking ${inputs.length} create form fields for input...`);
-    
+
         for (const input of inputs) {
             if (input.name === '_token' || input.name === '_method') continue;
-    
+
             // For create, just check if the field has a value
             if (input.value.trim() !== '') {
                 console.log(`User typed in ${input.name}: ${input.value}`);
@@ -415,7 +488,7 @@ if (editImageInput && editPreviewImage) {
         }
         return false;
     }
-    
+
     // Function to Check if Edit Form Has Changes (Edit Form)
     function isFormChanged() {
         const editForm = document.querySelector('#editFormContainer form');
@@ -423,13 +496,13 @@ if (editImageInput && editPreviewImage) {
             console.log('Edit form is not visible, skipping change detection.');
             return false;
         }
-    
+
         const inputs = editForm.querySelectorAll('input, textarea, select');
         console.log(`Checking ${inputs.length} edit form fields for changes...`);
-    
+
         for (const input of inputs) {
             if (input.name === '_token' || input.name === '_method') continue;
-    
+
             if (input.type === 'file') {
                 // 🔥 Special handling for file inputs
                 if (input.files.length > 0) {
@@ -446,23 +519,23 @@ if (editImageInput && editPreviewImage) {
                 }
             }
         }
-    
+
         return false;
     }
-    
+
 
     // Function to Reset Form
     function resetForm() {
         const forms = document.querySelectorAll('#createFormContainer form, #editFormContainer form');
         forms.forEach(form => form.reset());
-    
+
         // Remove the original value attributes to prevent comparison issues
         forms.forEach(form => {
             form.querySelectorAll('input, textarea, select').forEach(input => {
                 input.removeAttribute('data-original-value'); // Remove original value attribute on reset
             });
         });
-    
+
         // Properly select the images inside preview containers
         const previewImages = document.querySelectorAll('#imagePreview img, #ePreviewImage');
         previewImages.forEach(image => {
@@ -470,16 +543,16 @@ if (editImageInput && editPreviewImage) {
                 image.src = 'https://static.thenounproject.com/png/1269202-200.png'; // Reset image preview
             }
         });
-    
+
         // Reset file input so it doesn’t hold previous file selection
         document.getElementById('eImage').value = '';
     }
-    
+
     // Ensure reset runs when closing the form
     document.getElementById('closeFormButton').addEventListener('click', function () {
         document.getElementById('editFormContainer').style.display = 'none';
         resetForm(); // Call reset AFTER hiding the form
     });
-    
+
 
 });
