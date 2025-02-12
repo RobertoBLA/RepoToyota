@@ -14,6 +14,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeFormButton = document.getElementById('closeFormButton');
     const previewImage = document.getElementById('previewImage');
     const imageInput = document.getElementById('image');
+    const editPreviewImage = document.getElementById('ePreviewImage');
+    const editImageInput = document.getElementById('eImage');
 
 
     // Handle Create Button Click
@@ -42,7 +44,9 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
-
+    console.log('editImageInput:', editImageInput);
+    console.log('editPreviewImage:', editPreviewImage);
+    
     // Handle Image Preview for Create Form
     if (imageInput && previewImage) {
         imageInput.addEventListener('change', function (event) {
@@ -59,6 +63,24 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+
+if (editImageInput && editPreviewImage) {
+    editImageInput.addEventListener('change', function (event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                editPreviewImage.src = e.target.result;
+                console.log('Edit image selected:', file.name);
+            };
+            reader.readAsDataURL(file);
+        } else {
+            editPreviewImage.src = 'https://static.thenounproject.com/png/1269202-200.png';
+        }
+    });
+}
+
 
     // Handle Form Submission
     if (createForm && submitButton) {

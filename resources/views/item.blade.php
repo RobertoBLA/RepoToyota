@@ -89,68 +89,74 @@
             z-index: 999;
         }
 
-/* Modal Overlay */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
-    display: none; /* Hidden by default */
-}
+        /* Modal Overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            display: none;
+            /* Hidden by default */
+        }
 
-/* Modal Container */
-.modal-container {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    z-index: 1001;
-    width: 80%; /* Adjust as needed */
-    max-width: 800px;
-    display: none; /* Hidden by default */
-}
+        /* Modal Container */
+        .modal-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 1001;
+            width: 80%;
+            /* Adjust as needed */
+            max-width: 800px;
+            display: none;
+            /* Hidden by default */
+        }
 
-/* Split Layout */
-.split-container {
-    display: flex;
-    gap: 20px; /* Space between form and image preview */
-}
+        /* Split Layout */
+        .split-container {
+            display: flex;
+            gap: 20px;
+            /* Space between form and image preview */
+        }
 
-/* Form Section */
-.form-section {
-    flex: 2; /* Takes up 2/3 of the space */
-}
+        /* Form Section */
+        .form-section {
+            flex: 2;
+            /* Takes up 2/3 of the space */
+        }
 
-/* Image Section */
-.image-section {
-    flex: 1; /* Takes up 1/3 of the space */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
+        /* Image Section */
+        .image-section {
+            flex: 1;
+            /* Takes up 1/3 of the space */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
 
-/* Image Preview Container */
-.image-preview-container {
-    cursor: pointer;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px dashed #ccc;
-    border-radius: 8px;
-    overflow: hidden;
-}
+        /* Image Preview Container */
+        .image-preview-container {
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            overflow: hidden;
+        }
 
-.image-preview-container:hover {
+        .image-preview-container:hover {
             border-color: #007bff;
             /* Change border color on hover */
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -159,17 +165,17 @@
             /* Slightly enlarge the container */
         }
 
-/* Image Preview */
-.image-preview img {
-    max-width: 100%;
-    max-height: 200px;
-    object-fit: cover;
-}
+        /* Image Preview */
+        .image-preview img {
+            max-width: 100%;
+            max-height: 200px;
+            object-fit: cover;
+        }
 
-/* Buttons */
-.btn {
-    margin-top: 10px;
-}
+        /* Buttons */
+        .btn {
+            margin-top: 10px;
+        }
     </style>
 </head>
 

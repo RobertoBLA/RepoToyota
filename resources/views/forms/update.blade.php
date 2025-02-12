@@ -32,7 +32,7 @@
                     </div>
                     <div class="mb-3">
                         <!-- Hidden File Input -->
-                        <input type="file" name="image" id="image" class="form-control d-none" accept="image/*">
+                        <input type="file" name="image" id="eImage" class="form-control d-none" accept="image/*">
                     </div>
                     <!-- Submit Button -->
                     <button type="submit" class="btn btn-success">Save</button>
@@ -43,10 +43,10 @@
                 <!-- Right Side: Image Preview -->
                 <div class="image-section">
                     <!-- Clickable Image Container -->
-                    <label for="image" class="image-preview-container">
+                    <label for="eImage" class="image-preview-container">
                         <div id="imagePreview" class="image-preview">
                             <!-- Default Placeholder -->
-                            <img src="https://static.thenounproject.com/png/1269202-200.png" alt="Preview" id="previewImage">
+                            <img src="https://static.thenounproject.com/png/1269202-200.png" alt="Preview" id="ePreviewImage">
                         </div>
                     </label>
                 </div>
