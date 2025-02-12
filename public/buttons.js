@@ -34,6 +34,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     const confirmClose = confirm('You have unsaved changes. Are you sure you want to close?');
                     if (!confirmClose) return; // Do not close the modal if the user cancels
                 }
+                if (isFormChanged()) {
+                    const confirmClose = confirm('You have unsaved changes. Are you sure you want to close?');
+                    if (!confirmClose) return; // Do not close the modal if the user cancels
+                }
                 closeModal();
             });
         });
@@ -235,6 +239,12 @@ document.addEventListener('DOMContentLoaded', () => {
         editPrice.value = item.price;
         editStock.value = item.stock;
 
+        editItemId.dataset.originalValue = item.id;
+        editName.dataset.originalValue = item.name;
+        editDescription.dataset.originalValue = item.description;
+        editPrice.dataset.originalValue = item.price;
+        editStock.dataset.originalValue = item.stock;
+
         // Update the image preview
         const previewImage = document.getElementById('editPreviewImage');
         if (previewImage) {
@@ -365,40 +375,64 @@ if (editForm) {
     function isFormDirty() {
         const form = document.querySelector('#createFormContainer form, #editFormContainer form');
         if (!form) return false;
-
+    
         const inputs = form.querySelectorAll('input, textarea, select'); // Get all form fields
         console.log(`Checking ${inputs.length} form fields for changes...`);
-
+    
         for (const input of inputs) {
             if (input.name === '_token') continue; // Skip CSRF token field
-
+    
+            // Handle file inputs
             if (input.type === 'file' && input.files.length > 0) {
-                console.log(`File input detected: ${input.files[0].name}`);
+                console.log(`File input changed: ${input.name}`);
                 return true;
-            } else if (input.value.trim() !== '') {
-                console.log(`Non-empty input detected: ${input.name} = ${input.value}`);
+            }
+    
+            // Get the original stored value (from when the form was first loaded)
+            const originalValue = input.dataset.originalValue ?? '';
+    
+            // Compare current value with original value
+            if (input.value.trim() !== originalValue.trim()) {
+                console.log(`Change detected: ${input.name} (Original: "${originalValue}", New: "${input.value}")`);
                 return true;
             }
         }
-
-        // Check if the image preview has changed
-        const previewImage = document.getElementById('previewImage') || document.getElementById('editPreviewImage');
-        const defaultPlaceholder = 'https://static.thenounproject.com/png/1269202-200.png';
-
-        if (previewImage) {
-            const previewUrl = new URL(previewImage.src);
-            const defaultUrl = new URL(defaultPlaceholder);
-
-            if (previewUrl.hostname !== defaultUrl.hostname || previewUrl.pathname !== defaultUrl.pathname) {
-                console.log('Image preview has changed.');
-                return true;
-            }
-        }
-
-        console.log('No changes detected in the form or image preview.');
-        return false;
+        return false; // No changes detected
     }
 
+
+    function isFormChanged() {
+        const form = document.querySelector('#editFormContainer form');
+        if (!form) return false;
+    
+        const inputs = form.querySelectorAll('input, textarea, select');
+        console.log(`Checking ${inputs.length} fields for changes...`);
+    
+        for (const input of inputs) {
+            if (input.name === '_token' || input.name === '_method') continue; // ✅ Ignore _method and CSRF token
+    
+            // Handle file inputs separately
+            if (input.type === 'file' && input.files.length > 0) {
+                console.log(`File input changed: ${input.name}`);
+                return true;
+            }
+    
+            // Ensure original value is stored
+            const originalValue = input.dataset.originalValue || '';
+            const currentValue = input.value.trim();
+    
+            console.log(`Checking ${input.name}: Original="${originalValue}" | Current="${currentValue}"`);
+    
+            if (currentValue !== originalValue.trim()) {
+                console.log(`Change detected in ${input.name}!`);
+                return true;
+            }
+        }
+    
+        console.log("No changes detected.");
+        return false;
+    }
+    
 
     // Function to Reset Form
     function resetForm() {
