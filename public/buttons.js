@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const previewImage = document.getElementById('previewImage');
     const imageInput = document.getElementById('image');
 
-    
+
     // Handle Create Button Click
     if (createButton && createFormContainer) {
         createButton.addEventListener('click', () => {
@@ -259,94 +259,94 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Handle Edit Form Submission
-const editForm = document.getElementById('editForm'); // Or the specific edit form
-if (editForm) {
-    editForm.addEventListener('submit', async function (event) {
-        event.preventDefault(); // Prevent the default form submission
+    const editForm = document.getElementById('editForm'); // Or the specific edit form
+    if (editForm) {
+        editForm.addEventListener('submit', async function (event) {
+            event.preventDefault(); // Prevent the default form submission
 
-        const itemIdE = document.getElementById('eId').value;  // Get the item ID (hidden input)
-        console.log('Updating item with ID:', itemIdE);
+            const itemIdE = document.getElementById('eId').value;  // Get the item ID (hidden input)
+            console.log('Updating item with ID:', itemIdE);
 
-        // Disable the submit button to prevent multiple submissions
-        saveButton.disabled = true;
-        saveButton.textContent = 'Saving...';
+            // Disable the submit button to prevent multiple submissions
+            saveButton.disabled = true;
+            saveButton.textContent = 'Saving...';
 
-        try {
-            // Gather the form data
-            const formData = new FormData(editForm);
-            formData.append('_method', 'PUT'); // Simulate PUT request
+            try {
+                // Gather the form data
+                const formData = new FormData(editForm);
+                formData.append('_method', 'PUT'); // Simulate PUT request
 
-            const file = document.getElementById('image').files[0];
-            if (file && file.size > 0) {
-                formData.append('image', file);
-            } else {
-                formData.delete('image'); // Remove the image field if no file is selected
-            }
-
-            formData.forEach((value, key) => {
-                console.log(key, value); // Log all form fields and their values
-            });
-
-            // Send the form data to the server for updating the item
-            const response = await fetch(`/item/${itemIdE}`, {
-                method: 'POST', // Use POST with _method=PUT
-                body: formData,
-                headers: {
-                    'X-CSRF-TOKEN': csrfToken
+                const file = document.getElementById('image').files[0];
+                if (file && file.size > 0) {
+                    formData.append('image', file);
+                } else {
+                    formData.delete('image'); // Remove the image field if no file is selected
                 }
-            });
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Failed to update item');
-            }
+                formData.forEach((value, key) => {
+                    console.log(key, value); // Log all form fields and their values
+                });
 
-            // Handle success response
-            const result = await response.json();
-            console.log('Item updated successfully:', result);
-            
-            // Update the item in the table
-            const updatedItem = result.item;
-            const table = $('#items-table').DataTable();
-            
-            // Find the row that matches the item's ID
-            const rowIndexes = table.rows().eq(0).filter(function (rowIdx) {
-                return table.cell(rowIdx, 0).data() == updatedItem.id; // Use `==` to avoid type mismatch issues
-            }).toArray(); // Convert to array
-            
-            
-            // If a matching row is found, update it
-            if (rowIndexes.length > 0) {
-                const rowIndex = rowIndexes[0]; // Get the first matched row index
-                const row = table.row(rowIndex);;
-                row.data([
-                    updatedItem.id,
-                    updatedItem.name,
-                    updatedItem.description,
-                    updatedItem.price,
-                    updatedItem.stock,
-                    `<td>
+                // Send the form data to the server for updating the item
+                const response = await fetch(`/item/${itemIdE}`, {
+                    method: 'POST', // Use POST with _method=PUT
+                    body: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to update item');
+                }
+
+                // Handle success response
+                const result = await response.json();
+                console.log('Item updated successfully:', result);
+
+                // Update the item in the table
+                const updatedItem = result.item;
+                const table = $('#items-table').DataTable();
+
+                // Find the row that matches the item's ID
+                const rowIndexes = table.rows().eq(0).filter(function (rowIdx) {
+                    return table.cell(rowIdx, 0).data() == updatedItem.id; // Use `==` to avoid type mismatch issues
+                }).toArray(); // Convert to array
+
+
+                // If a matching row is found, update it
+                if (rowIndexes.length > 0) {
+                    const rowIndex = rowIndexes[0]; // Get the first matched row index
+                    const row = table.row(rowIndex);;
+                    row.data([
+                        updatedItem.id,
+                        updatedItem.name,
+                        updatedItem.description,
+                        updatedItem.price,
+                        updatedItem.stock,
+                        `<td>
                         <button class="editButton btn btn-primary" data-item-id="${updatedItem.id}">Edit</button>
                         <button class="deleteButton btn btn-danger" data-item-id="${updatedItem.id}">Delete</button>
                     </td>`
-                ]).draw(false);
+                    ]).draw(false);
+                }
+
+
+
+                // Close the modal after successful submission
+                closeModal();
+                alert(result.message || 'Item updated successfully!');
+            } catch (error) {
+                console.error(error.message);
+                alert('An error occurred while updating the item.');
+            } finally {
+                saveButton.disabled = false;
+                saveButton.textContent = 'Save Changes'; // Reset button text
             }
-            
-            
-            
-            // Close the modal after successful submission
-            closeModal();
-            alert(result.message || 'Item updated successfully!');
-        } catch (error) {
-            console.error(error.message);
-            alert('An error occurred while updating the item.');
-        } finally {
-            saveButton.disabled = false;
-            saveButton.textContent = 'Save Changes'; // Reset button text
-        }
-    });
-    
-}
+        });
+
+    }
 
     // Function to Close Modal
     function closeModal() {
@@ -373,63 +373,49 @@ if (editForm) {
 
     // Function to Check if Form Has Data
     function isFormDirty() {
-        const form = document.querySelector('#createFormContainer form, #editFormContainer form');
-        if (!form) return false;
+        const createForm = document.querySelector('#createFormContainer form');
+        if (!createForm || createForm.closest('.hidden')) {
+            console.log('Create form is not visible, skipping dirtiness check.');
+            return false;
+        }
     
-        const inputs = form.querySelectorAll('input, textarea, select'); // Get all form fields
-        console.log(`Checking ${inputs.length} form fields for changes...`);
+        const inputs = createForm.querySelectorAll('input, textarea, select');
+        console.log(`Checking ${inputs.length} create form fields for input...`);
     
         for (const input of inputs) {
-            if (input.name === '_token') continue; // Skip CSRF token field
+            if (input.name === '_token' || input.name === '_method') continue;
     
-            // Handle file inputs
-            if (input.type === 'file' && input.files.length > 0) {
-                console.log(`File input changed: ${input.name}`);
-                return true;
-            }
-    
-            // Get the original stored value (from when the form was first loaded)
-            const originalValue = input.dataset.originalValue ?? '';
-    
-            // Compare current value with original value
-            if (input.value.trim() !== originalValue.trim()) {
-                console.log(`Change detected: ${input.name} (Original: "${originalValue}", New: "${input.value}")`);
+            // For create, just check if the field has a value
+            if (input.value.trim() !== '') {
+                console.log(`User typed in ${input.name}: ${input.value}`);
                 return true;
             }
         }
-        return false; // No changes detected
+        return false;
     }
-
-
+    
+    // Function to Check if Edit Form Has Changes (Edit Form)
     function isFormChanged() {
-        const form = document.querySelector('#editFormContainer form');
-        if (!form) return false;
-    
-        const inputs = form.querySelectorAll('input, textarea, select');
-        console.log(`Checking ${inputs.length} fields for changes...`);
-    
-        for (const input of inputs) {
-            if (input.name === '_token' || input.name === '_method') continue; // ✅ Ignore _method and CSRF token
-    
-            // Handle file inputs separately
-            if (input.type === 'file' && input.files.length > 0) {
-                console.log(`File input changed: ${input.name}`);
-                return true;
-            }
-    
-            // Ensure original value is stored
-            const originalValue = input.dataset.originalValue || '';
-            const currentValue = input.value.trim();
-    
-            console.log(`Checking ${input.name}: Original="${originalValue}" | Current="${currentValue}"`);
-    
-            if (currentValue !== originalValue.trim()) {
-                console.log(`Change detected in ${input.name}!`);
-                return true;
-            }
+        const editForm = document.querySelector('#editFormContainer form');
+        if (!editForm || editForm.closest('.hidden')) {
+            console.log('Edit form is not visible, skipping change detection.');
+            return false;
         }
     
-        console.log("No changes detected.");
+        const inputs = editForm.querySelectorAll('input, textarea, select');
+        console.log(`Checking ${inputs.length} edit form fields for changes...`);
+    
+        for (const input of inputs) {
+            if (input.name === '_token' || input.name === '_method') continue;
+    
+            // Compare only if the original value exists
+            if (input.dataset.originalValue !== undefined) {
+                if (input.value !== input.dataset.originalValue) {
+                    console.log(`Change detected in ${input.name}: ${input.value} (original: ${input.dataset.originalValue})`);
+                    return true;
+                }
+            }
+        }
         return false;
     }
     
@@ -439,11 +425,19 @@ if (editForm) {
         const forms = document.querySelectorAll('#createFormContainer form, #editFormContainer form');
         forms.forEach(form => form.reset());
 
+        // Remove the original value attributes to prevent comparison issues
+        forms.forEach(form => {
+            form.querySelectorAll('input, textarea, select').forEach(input => {
+                input.removeAttribute('data-original-value'); // Remove original value attribute on reset
+            });
+        });
+
         const previewImages = document.querySelectorAll('#previewImage, #editPreviewImage');
         previewImages.forEach(image => {
             if (image) {
-                image.src = 'https://static.thenounproject.com/png/1269202-200.png';
+                image.src = 'https://static.thenounproject.com/png/1269202-200.png'; // Reset image preview
             }
         });
     }
+
 });
