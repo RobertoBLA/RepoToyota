@@ -195,6 +195,7 @@
                     <th>Price</th>
                     <th>Stock</th>
                     <th>Actions</th>
+                    <th>Status</th>
                 </tr>
             </thead>
             <tbody>
@@ -209,11 +210,14 @@
                         <button id="editItem" type="button" class="btn btn-primary editButton" data-item-id="{{ $item->id }}">
                             Edit
                         </button>
-                        <button id="deleteItem" type="button" class="btn btn-danger deleteButton" data-item-id="{{ $item->id }}">
-                            Delete
-                        </button>
                         <button id="viewItem" type="button" class="btn btn-info viewButton" data-item-id="{{ $item->id }}">
                             View
+                    </td>
+                    <td>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" data-item-id="status-{{ $item->id }}"  {{ $item->status ? 'checked' : '' }}>
+                            <label class="form-check-label" for="status"></label>
+                        </div>
                     </td>
                 </tr>
                 @endforeach

@@ -12,6 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const overlay = document.getElementById('overlay');
     const createFormContainer = document.getElementById('createFormContainer');
     const closeFormButton = document.getElementById('closeFormButton');
+    const closeFormButtonV = document.getElementById('closeFormButtonV');
+    const closeFormButtonE = document.getElementById('closeFormButtonE');
     const previewImage = document.getElementById('previewImage');
     const imageInput = document.getElementById('image');
     const editPreviewImage = document.getElementById('ePreviewImage');
@@ -29,9 +31,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Handle Close Button and Overlay Clicks
-    if (closeFormButton && overlay) {
-        [closeFormButton, overlay].forEach(element => {
+    if (closeFormButton && closeFormButtonV && closeFormButtonE && overlay) {
+        [closeFormButton, closeFormButtonV, closeFormButtonE, overlay].forEach(element => {
             element.addEventListener('click', () => {
+                console.log('Close button or overlay clicked');
                 if (isFormDirty()) {
                     const confirmClose = confirm('You have unsaved changes. Are you sure you want to close?');
                     if (!confirmClose) return; // Do not close the modal if the user cancels
@@ -120,8 +123,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     newItem.stock,
                     `<td>
                     <button class="editButton btn btn-primary" data-item-id="${newItem.id}">Edit</button>
-                    <button class="deleteButton btn btn-danger" data-item-id="${newItem.id}">Delete</button>
+                    <button class="viewButton btn btn-info" data-item-id="${newItem.id}"> View</button>
                 </td>`,
+                    newItem.status,
                 ]).draw(false).node();
 
                 table.row(newRow).invalidate().draw(false);
@@ -138,11 +142,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         console.error(`Edit button not found for item ID: ${newItem.id}`);
                     }
 
-                    if (deleteButton) {
-                        deleteButton.addEventListener('click', () => handleDelete(deleteButton));
-                    } else {
-                        console.error(`Delete button not found for item ID: ${newItem.id}`);
-                    }
                 }, 100); // Delay execution slightly to ensure buttons are in the DOM
 
                 // Close the modal and reset the form
@@ -168,13 +167,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (event.target.closest(".editButton")) {
             handleEdit(event); // Pass the full event
         }
-        if (event.target.closest(".deleteButton")) {
-            handleDelete(event);
-        }
         if (event.target.closest(".viewButton")) {
             handleView(event);
         }
     });
+
+    // Function to handle Status
 
 
 
@@ -249,36 +247,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
     }
 
-    // Function to handle Delete Clicks
-    async function handleDelete(event) {
-        const deleteButton = event.target.closest('.deleteButton');
-        const itemId = deleteButton.dataset.itemId;
-        console.log('Delete button clicked for item ID:', itemId);
 
-        const confirmDelete = confirm(`Are you sure you want to delete item ${itemId}?`);
-        if (!confirmDelete) return;
-
-        try {
-            const response = await fetch(`item/${itemId}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': csrfToken
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to delete item', itemId);
-            }
-
-            const table = $('#items-table').DataTable();
-            table.row(deleteButton.closest('tr')).remove().draw();
-
-            console.log(`Item ${itemId} deleted successfully.`);
-        } catch (error) {
-            console.error(error.message);
-            alert('An error occurred while deleting the item.');
-        }
-    }
 
     // Function to Populate the Edit Form
     function populateEditForm(item) {
@@ -325,8 +294,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const viewDescription = document.getElementById('vDescription');
         const viewPrice = document.getElementById('vPrice');
         const viewStock = document.getElementById('vStock');
+        const viewCreatedAt = document.getElementById('vCreatedAt');
+        const viewUpdatedAt = document.getElementById('vUpdatedAt');
 
-        if (!viewItemId || !viewName || !viewDescription || !viewPrice || !viewStock) {
+        if (!viewItemId || !viewName || !viewDescription || !viewPrice || !viewStock || !viewCreatedAt || !viewUpdatedAt) {
             console.error('One or more form fields are missing. Check the IDs in the HTML.');
             return;
         }
@@ -338,6 +309,8 @@ document.addEventListener('DOMContentLoaded', () => {
         viewPrice.value = item.price;
         viewStock.value = item.stock;
 
+        viewCreatedAt.textContent = 'Created at: ' + item.created_at;
+        viewUpdatedAt.textContent = 'Updated at: ' + item.updated_at;
 
         // Update the image preview
         const previewImage = document.getElementById('vPreviewImage');
@@ -421,12 +394,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         updatedItem.stock,
                         `<td>
                         <button class="editButton btn btn-primary" data-item-id="${updatedItem.id}">Edit</button>
-                        <button class="deleteButton btn btn-danger" data-item-id="${updatedItem.id}">Delete</button>
-                    </td>`
+                        <button class="viewButton btn btn-info" data-item-id="${updatedItem.id}"> View</button>
+                    </td>`,
+                        updatedItem.status,
                     ]).draw(false);
                 }
-
-
 
                 // Close the modal after successful submission
                 closeModal();

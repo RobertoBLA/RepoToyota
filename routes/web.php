@@ -15,8 +15,7 @@ Route::get('/items', [ItemController::class, 'index'])->name('items.index');
 // Create Item
 Route::post('/item', [ItemController::class, 'store'])->name('item.store');
 
-// Edit Form
-Route::get('/item/{id}/edit', [ItemController::class, 'edit'])->name('item.edit');
+
 
 // Show Item (AJAX)
 Route::get('/item/{id}', [ItemController::class, 'show'])->name('item.show');

@@ -4,10 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Item;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Validation\ValidationException;
 
-use function Laravel\Prompts\error;
+use Illuminate\Validation\ValidationException;
+use Carbon\Carbon;
+
+
 
 class ItemController extends Controller
 {
@@ -22,6 +23,8 @@ class ItemController extends Controller
         $items = Item::all();
         return view('item', compact('items'));
     }
+
+
 
     /**
      * Store a newly created item in storage.
@@ -58,15 +61,6 @@ class ItemController extends Controller
     }
 
     /**
-     * Show the form for editing the specified item.
-     */
-    public function edit($id)
-    {
-        $item = Item::findOrFail($id);
-        return view('form.edit', compact('item'));
-    }
-
-    /**
      * Display the specified item (used for AJAX requests).
      */
     public function show($id)
@@ -81,6 +75,8 @@ class ItemController extends Controller
             'price' => $item->price,
             'stock' => $item->stock,
             'image' => $item->image ? asset('storage/' . $item->image) : self::PLACEHOLDER_IMAGE,
+            'created_at' => Carbon::parse($item->created_at)->setTimezone('America/New_York')->format('Y-m-d H:i:s'),
+            'updated_at' => Carbon::parse($item->updated_at)->setTimezone('America/New_York')->format('Y-m-d H:i:s'),
         ]);
     }
 
@@ -99,10 +95,10 @@ class ItemController extends Controller
                 'stock' => 'required|integer',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             ]);
-    
+
             // Find the item
             $item = Item::findOrFail($id);
-    
+
             // Handle image upload if provided
             if ($request->hasFile('image') && $request->file('image')->isValid()) {
                 // Store the new image
@@ -111,10 +107,10 @@ class ItemController extends Controller
                 // Do not include 'image' field if no new image is uploaded
                 unset($validatedData['image']);
             }
-    
+
             // Update the item (image will only be updated if a new image is uploaded)
             $item->update($validatedData);
-    
+
             // Return a success response
             return response()->json([
                 'message' => 'Item updated successfully!',
@@ -141,7 +137,7 @@ class ItemController extends Controller
             ], 500);
         }
     }
-    
+
 
     /**
      * Remove the specified item from storage.

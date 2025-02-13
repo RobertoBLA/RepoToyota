@@ -1,5 +1,5 @@
-
 <!-- Overlay -->
+
 <div class="modal-overlay" id="overlay" style="display: none;"></div>
 
 <!-- Hovering Form Container -->
@@ -7,7 +7,7 @@
     <h4 style="text-align: center;"> View Item</h4>
     <div class="modal-content">
         <!-- Split Layout -->
-        <form action="{{ route('item.update')" method="POST" enctype="multipart/form-data" id="viewForm">
+        <form enctype="multipart/form-data" id="viewForm">
             <div class="split-container">
                 <!-- Left Side: Form Fields -->
                 <div class="form-section">
@@ -33,7 +33,11 @@
                         <input type="file" name="image" id="vImage" class="form-control d-none" accept="image/*" disabled>
                     </div>
                     <!-- Close Button -->
-                    <button type="button" id="closeFormButton" class="btn btn-secondary">Close</button>
+                    <button type="button" id="closeFormButtonV" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                   
+                    <div id="vCreatedAt">Created At: </div>
+                    <div id="vUpdatedAt">Last Updated At: </div>
+
                 </div>
 
                 <!-- Right Side: Image Preview -->

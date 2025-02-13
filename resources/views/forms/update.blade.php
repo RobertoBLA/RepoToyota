@@ -37,7 +37,7 @@
                     <!-- Submit Button -->
                     <button type="submit" class="btn btn-success">Save</button>
                     <!-- Close Button -->
-                    <button type="button" id="closeFormButton" class="btn btn-secondary">Close</button>
+                    <button type="button" id="closeFormButtonE" class="btn btn-secondary">Close</button>
                 </div>
 
                 <!-- Right Side: Image Preview -->
