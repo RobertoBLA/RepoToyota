@@ -15,7 +15,7 @@ Route::get('/items', [ItemController::class, 'index'])->name('items.index');
 // Create Item
 Route::post('/item', [ItemController::class, 'store'])->name('item.store');
 
-
+Route::post('/update-status/{id}', [ItemController::class, 'updateStatus']);
 
 // Show Item (AJAX)
 Route::get('/item/{id}', [ItemController::class, 'show'])->name('item.show');

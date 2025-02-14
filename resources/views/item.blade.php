@@ -176,6 +176,17 @@
         .btn {
             margin-top: 10px;
         }
+
+        .disabled-row {
+            background-color: #f0f0f0 !important;
+            /* Light gray */
+            color: #999 !important;
+            /* Dim text */
+            pointer-events: none;
+            /* Disable clicks */
+            opacity: 0.6;
+            /* Make it look inactive */
+        }
     </style>
 </head>
 
@@ -200,7 +211,7 @@
             </thead>
             <tbody>
                 @foreach ($items as $item)
-                <tr>
+                <tr class="{{ $item->status == 0 ? 'disabled-row' : '' }}" data-item-id="{{ $item->id }}">
                     <td>{{ $item->id }}</td>
                     <td>{{ $item->name }}</td>
                     <td>{{ $item->description }}</td>
@@ -212,10 +223,12 @@
                         </button>
                         <button id="viewItem" type="button" class="btn btn-info viewButton" data-item-id="{{ $item->id }}">
                             View
+                        </button>
                     </td>
                     <td>
                         <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" data-item-id="status-{{ $item->id }}"  {{ $item->status ? 'checked' : '' }}>
+                            <input class="form-check-input toggle-status" type="checkbox" data-item-id="{{ $item->id }}"
+                                data-status="{{ $item->status }}" {{ $item->status ? 'checked' : '' }}>
                             <label class="form-check-label" for="status"></label>
                         </div>
                     </td>

@@ -56,6 +56,7 @@ class ItemController extends Controller
                 'price' => $item->price,
                 'stock' => $item->stock,
                 'image' => $item->image ? asset('storage/' . $item->image) : null,
+                'status' => (int) $item->status,
             ],
         ]);
     }
@@ -121,6 +122,7 @@ class ItemController extends Controller
                     'price' => $item->price,
                     'stock' => $item->stock,
                     'image' => $item->image ? asset('storage/' . $item->image) : null,
+                    'status' => $item->status,
                 ],
             ]);
         } catch (ValidationException $e) {
@@ -138,6 +140,18 @@ class ItemController extends Controller
         }
     }
 
+    public function updateStatus(Request $request, $id)
+    {
+        $item = Item::findOrFail($id);
+        $item->status = $request->status; // Store as 0 or 1
+        $item->save();
+    
+        return response()->json(['message' => 'Status updated successfully',
+        'item' => [
+            'status' => $item->status,
+        ]]);
+    }
+    
 
     /**
      * Remove the specified item from storage.

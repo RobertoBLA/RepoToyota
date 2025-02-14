@@ -125,10 +125,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     <button class="editButton btn btn-primary" data-item-id="${newItem.id}">Edit</button>
                     <button class="viewButton btn btn-info" data-item-id="${newItem.id}"> View</button>
                 </td>`,
-                    newItem.status,
+                    `<td>
+                <div class="form-check form-switch">
+                    <input 
+                        class="form-check-input toggle-status" 
+                        type="checkbox" 
+                        data-item-id="${newItem.id}" 
+                        checked> <!-- Always checked -->
+                    <label class="form-check-label"></label>
+                </div>
+            </td>`,
                 ]).draw(false).node();
 
-                table.row(newRow).invalidate().draw(false);
 
 
                 // Make sure the newRow is inserted into the DOM before querying it
@@ -396,6 +404,16 @@ document.addEventListener('DOMContentLoaded', () => {
                         <button class="editButton btn btn-primary" data-item-id="${updatedItem.id}">Edit</button>
                         <button class="viewButton btn btn-info" data-item-id="${updatedItem.id}"> View</button>
                     </td>`,
+                        `<td>
+        <div class="form-check form-switch">
+            <input 
+                class="form-check-input toggle-status" 
+                type="checkbox" 
+                data-item-id="${updatedItem.id}" 
+                ${updatedItem.status == 1 ? 'checked' : ''}>
+            <label class="form-check-label"></label>
+        </div>
+    </td>`,
                         updatedItem.status,
                     ]).draw(false);
                 }
@@ -476,7 +494,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (input.name === '_token' || input.name === '_method') continue;
 
             if (input.type === 'file') {
-                // 🔥 Special handling for file inputs
+                // Special handling for file inputs
                 if (input.files.length > 0) {
                     console.log(`Change detected in ${input.name}: New file selected.`);
                     return true;
@@ -526,5 +544,60 @@ document.addEventListener('DOMContentLoaded', () => {
         resetForm(); // Call reset AFTER hiding the form
     });
 
+
+
+    // Event delegation for status toggle (checkbox)
+    $(document).on('change', '.toggle-status', async function (event) {
+        const toggle = event.target.closest('.toggle-status'); 
+            const confirmClose = confirm('Are you sure you want deactivate this Item? This action cant be reversed');
+            if (!confirmClose) return; // Do not close the modal if the user cancels
+
+        if (!toggle) {
+            console.error('Status toggle not found');
+            return;
+        }
+
+        const itemId = toggle.getAttribute('data-item-id');
+        if (!itemId) {
+            console.error('Item ID not found for status toggle');
+            return;
+        }
+
+        const status = toggle.checked ? 1 : 0;  // Get the status (checked = 1, unchecked = 0)
+        const csrfToken = $('meta[name="csrf-token"]').attr('content');  // Get CSRF token (if needed)
+
+        // Make the AJAX request to update the status
+        try {
+            const response = await fetch(`/update-status/${itemId}`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ status }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update status');
+            }
+
+            const result = await response.json();
+            console.log(result.message);
+
+            // Find the row that matches the itemId and update the row's status class
+            const row = $(toggle).closest('tr'); // This will find the closest tr relative to the checkbox
+            console.log(row); // Log the row to confirm it's correctly selected
+            // If unchecked, add the 'disabled-row' class; otherwise, remove it
+            if (status === 0) {
+                row.addClass('disabled-row');
+            } else {
+                row.removeClass('disabled-row');
+            }
+
+        } catch (error) {
+            console.error("Error updating status:", error);
+            alert("Failed to update status. Please try again.");
+        }
+    });
 
 });
