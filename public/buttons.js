@@ -549,7 +549,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Event delegation for status toggle (checkbox)
     $(document).on('change', '.toggle-status', async function (event) {
         const toggle = event.target.closest('.toggle-status'); 
-            const confirmClose = confirm('Are you sure you want deactivate this Item? This action cant be reversed');
+            const confirmClose = confirm('Are you sure you want to perform this action?');
             if (!confirmClose) return; // Do not close the modal if the user cancels
 
         if (!toggle) {

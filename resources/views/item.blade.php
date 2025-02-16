@@ -187,6 +187,13 @@
             opacity: 0.6;
             /* Make it look inactive */
         }
+
+        .disabled-row .toggle-status {
+            pointer-events: auto;
+            /* Allow interaction with the toggle */
+            opacity: 1;
+            /* Make sure the toggle is fully visible */
+        }
     </style>
 </head>
 
