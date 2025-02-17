@@ -198,11 +198,12 @@
 </head>
 
 <body>
-
+<x-app-layout>
     <div class="container mt-5">
         <!-- Create Button -->
-
-        <button id="createButton" type="button" class="btn btn-primary">Create Item</button>
+         @can('create items')
+        <button id="createButton" type="button" class="btn btn-primary" style="margin-bottom: 15px;">Create Item</button>
+        @endcan
         <!-- Table to Display Items -->
         <table id="items-table" class="display" style="width: 100%;">
             <thead>
@@ -225,18 +226,22 @@
                     <td>{{ $item->price }}</td>
                     <td>{{ $item->stock }}</td>
                     <td>
+                        @can('edit items')
                         <button id="editItem" type="button" class="btn btn-primary editButton" data-item-id="{{ $item->id }}">
                             Edit
                         </button>
+                        @endcan
                         <button id="viewItem" type="button" class="btn btn-info viewButton" data-item-id="{{ $item->id }}">
                             View
                         </button>
                     </td>
                     <td>
                         <div class="form-check form-switch">
+                            @can('change items status')
                             <input class="form-check-input toggle-status" type="checkbox" data-item-id="{{ $item->id }}"
                                 data-status="{{ $item->status }}" {{ $item->status ? 'checked' : '' }}>
                             <label class="form-check-label" for="status"></label>
+                            @endcan
                         </div>
                     </td>
                 </tr>
@@ -252,5 +257,6 @@
 
     <script src="{{ asset('buttons.js') }}"></script>
 </body>
+    </x-app-layout>
 
 </html>
