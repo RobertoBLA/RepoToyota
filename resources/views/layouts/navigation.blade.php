@@ -19,6 +19,10 @@
                     <x-nav-link :href="route('items.index')" :active="request()->routeIs('items.index')">
                         {{ __('Items Table') }}
                     </x-nav-link>
+
+                    <x-nav-link :href="route('users.permissions')" :active="request()->routeIs('users.permissions')">
+                        {{ __('Users and Permissions') }}
+                    </x-nav-link>
                 </div>
             </div>
 

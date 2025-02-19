@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ItemController;
+use App\Http\Controllers\PermissionsController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -23,6 +24,7 @@ Route::middleware('auth')->group(function () {
 
 
 Route::group(['middleware' => ['role:admin']], function () { 
+    Route::get('/permissions', [PermissionsController::class, 'permissionsIndex'])->name('users.permissions');
     Route::put('/item/{id}', [ItemController::class, 'update'])->name('item.update');
     Route::post('/item', [ItemController::class, 'store'])->name('item.store');
     Route::post('/update-status/{id}', [ItemController::class, 'updateStatus']);
@@ -30,13 +32,26 @@ Route::group(['middleware' => ['role:admin']], function () {
 
 
 
+ Route::group(['middleware' => ['can:edit items']], function () { 
+    Route::put('/item/{id}', [ItemController::class, 'update'])->name('item.update');
+ });
 
+ Route::group(['middleware' => ['can:create items']], function () { 
+    Route::post('/item', [ItemController::class, 'store'])->name('item.store');
+ });
+
+ Route::group(['middleware' => ['can:change items status']], function () { 
+    Route::post('/update-status/{id}', [ItemController::class, 'updateStatus']);
+ });
 
 
 
 
 // Show Item (AJAX)
 Route::get('/item/{id}', [ItemController::class, 'show'])->name('item.show');
+
+
+Route::put('/permissions/{id}', [PermissionsController::class, 'update'])->name('permissions.update');
 
 
 

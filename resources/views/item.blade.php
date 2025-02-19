@@ -235,6 +235,7 @@
                             View
                         </button>
                     </td>
+                    
                     <td>
                         <div class="form-check form-switch">
                             @can('change items status')
@@ -255,7 +256,7 @@
         @include('forms.view')
     </div>
 
-    <script src="{{ asset('buttons.js') }}"></script>
+    <script src="{{ asset('items.js') }}"></script>
 </body>
     </x-app-layout>
 

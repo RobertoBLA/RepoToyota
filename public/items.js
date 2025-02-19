@@ -180,10 +180,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Function to handle Status
-
-
-
     // Function to handle Edit Clicks
     function handleEdit(event) {
         const editButton = event.target.closest('.editButton'); // Ensure correct target
@@ -382,7 +378,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Update the item in the table
                 const updatedItem = result.item;
-                const table = $('#items-table').DataTable();
+
+
 
                 // Find the row that matches the item's ID
                 const rowIndexes = table.rows().eq(0).filter(function (rowIdx) {
@@ -548,9 +545,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Event delegation for status toggle (checkbox)
     $(document).on('change', '.toggle-status', async function (event) {
-        const toggle = event.target.closest('.toggle-status'); 
-            const confirmClose = confirm('Are you sure you want to perform this action?');
-            if (!confirmClose) return; // Do not close the modal if the user cancels
+        const toggle = event.target.closest('.toggle-status');
+        const confirmClose = confirm('Are you sure you want to perform this action?');
+        if (!confirmClose) return; // Do not close the modal if the user cancels
 
         if (!toggle) {
             console.error('Status toggle not found');

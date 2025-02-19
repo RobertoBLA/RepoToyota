@@ -24,7 +24,6 @@ class ItemController extends Controller
     }
 
 
-
     /**
      * Store a newly created item in storage.
      */
